@@ -146,8 +146,8 @@ El incremento en el costo de telas y la falta de automatización amenazan la ren
 
 | KPI | Definición | Fórmula | Unidad | Frecuencia | Semáforo |
 |-----|------------|---------|--------|------------|----------|
-| Margen de utilidad por producto | (Precio – Costo) / Precio * 100 | % de margen | Mensual | ✅ ≥30%, 🟡 20–29%, 🔴 <20% |
-| Costo por unidad producida | Costo total / Unidades | USD/prenda | Mensual | ✅ ≤10, 🟡 11–15, 🔴 >15 |
+| Margen de utilidad por producto | (Precio – Costo) / Precio * 100 | % de margen | % | Mensual | ✅ ≥30%, 🟡 20–29%, 🔴 <20% |
+| Costo por unidad producida | Costo total / Unidades | USD/prenda | USD/prenda | Mensual | ✅ ≤10, 🟡 11–15, 🔴 >15 |
 
 ---
 
