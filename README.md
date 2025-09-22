@@ -47,10 +47,12 @@ Nettalco es una empresa textil y de confecciones verticalmente integrada, locali
 - Ricardo Almeida  
 
 ### 1.6 Organigrama  
-*(Pendiente)*  
+<img width="879" height="593" alt="image" src="https://github.com/user-attachments/assets/0e5bf333-e824-48b3-b4d5-496895994e17" />
+
 
 ### 1.7 Mapa de procesos y subprocesos  
-*(Pendiente)*  
+<img width="891" height="360" alt="image" src="https://github.com/user-attachments/assets/e409b482-8a8d-4a6e-9948-59b0cd6c8d83" />
+
 
 ### 1.8 Cadena de valor  
 La cadena de valor de Nettalco está integrada verticalmente, controlando desde la obtención de materias primas hasta la entrega final.  
