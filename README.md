@@ -51,7 +51,7 @@ Nettalco es una empresa textil y de confecciones verticalmente integrada, locali
 
 
 ### 1.7 Mapa de procesos y subprocesos  
-<img width="891" height="360" alt="image" src="https://github.com/user-attachments/assets/e409b482-8a8d-4a6e-9948-59b0cd6c8d83" />
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115414.png" />
 
 
 ### 1.8 Cadena de valor  
