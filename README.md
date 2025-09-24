@@ -153,6 +153,27 @@ El incremento en el costo de telas y la falta de automatización amenazan la ren
 
 ---
 
+
+
+## 5. Evidencia Tecnica
+
+### 5.1 Implementación de HortonWorks 
+
+#### 5.1.1 Capturas de pantalla de la VM mostrando:
+
+##### CaractEristicas del sistema e inicio
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 114953" />
+##### modificación de contraseñas
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115026" />
+##### Servicios en ejecucion en Ambari
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115053" />
+##### Version de Spark
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115120" />
+##### Servicio HDFS y HIVE
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115200" />
+### 5.2 Diagrama de Arquitectura Inicial  
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115254" />
+
 ## Bibliografía  
 
 - [Tableau – Visualización de datos](https://www.tableau.com/es-es/blog)  
