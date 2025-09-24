@@ -161,18 +161,29 @@ El incremento en el costo de telas y la falta de automatización amenazan la ren
 
 #### 5.1.1 Capturas de pantalla de la VM mostrando:
 
-##### CaractEristicas del sistema e inicio
-<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 114953" />
+##### Caracteristicas del sistema e inicializacion
+
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 114953.png" />
+
 ##### modificación de contraseñas
-<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115026" />
+
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115026.png" />
+
 ##### Servicios en ejecucion en Ambari
-<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115053" />
+
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115053.png" />
+
 ##### Version de Spark
-<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115120" />
+
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115120.png" />
+
 ##### Servicio HDFS y HIVE
-<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115200" />
+
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115200.png" />
+
 ### 5.2 Diagrama de Arquitectura Inicial  
-<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115254" />
+
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-09-24 115254.png" />
 
 ## Bibliografía  
 
