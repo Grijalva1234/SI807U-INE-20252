@@ -277,16 +277,20 @@ Durante la revisión de la fuente de datos, se verificó que la información rec
 A continuación, un ejemplo del script utilizado para crear tablas externas en Hive:
 
 ```sql
-CREATE EXTERNAL TABLE IF NOT EXISTS nombre_tabla (
-    id INT,
-    campo1 STRING,
-    campo2 STRING,
-    campo3 DOUBLE
+CREATE EXTERNAL TABLE detalle_produccion_costura (
+    ORDEN_PRODUCCION STRING,
+    SECUENCIA_PAQUETE INT,
+    ESTILO STRING,
+    TALLA STRING,
+    PRENDAS INT,
+    FECHA_TERMINO TIMESTAMP
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
-LOCATION '/user/hive/warehouse/nombre_tabla';
+LOCATION '/Ruta/De/La/Carpeta/detalle-produccion-costura/'
+TBLPROPERTIES ("skip.header.line.count"="1");
+';
 ```
 
 ---
