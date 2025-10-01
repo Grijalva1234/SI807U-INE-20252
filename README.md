@@ -307,7 +307,7 @@ LIMIT 5;
 ```
 
 Con lo cual nos sale la siguiente tabla:
-<img width="795" height="584" alt="image" src="https://github.com/user-attachments/assets/564fedf7-ba07-496d-a13c-9d61a8a10a97" />
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-10-01 113649.png" />
 
 ---
 
