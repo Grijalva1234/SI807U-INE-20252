@@ -288,7 +288,7 @@ CREATE EXTERNAL TABLE detalle_produccion_costura (
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
-LOCATION '/Ruta/De/La/Carpeta/detalle-produccion-costura/'
+LOCATION '/Sistema_Inteligencia_Negocios_25-2/detalle-produccion-costura/'
 TBLPROPERTIES ("skip.header.line.count"="1");
 ';
 ```
@@ -296,8 +296,18 @@ TBLPROPERTIES ("skip.header.line.count"="1");
 ---
 
 ### 10.3. Resultados de consulta simple
+Queremos saber que tipo de producto se vendio mas, para ser mas precisos los 5 con mas ventas.
+Para ello hacemos la siguiente consulta:
+```sql
+SELECT categoria_producto, SUM(ventas) AS total_ventas
+FROM detalle_produccion_costura
+GROUP BY categoria_producto
+ORDER BY total_ventas DESC
+LIMIT 5;
+```
 
-
+Con lo cual nos sale la siguiente tabla:
+<img width="795" height="584" alt="image" src="https://github.com/user-attachments/assets/564fedf7-ba07-496d-a13c-9d61a8a10a97" />
 
 ---
 
