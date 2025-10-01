@@ -224,9 +224,9 @@ Con estas preguntas defninimos los KPI’s:
 
 En base a la información planteamos el siguiente modelo conceptual:
 
-<img width="886" height="373" alt="image" src="https://github.com/user-attachments/assets/36b747b4-dac7-4262-b7a3-c87f0ead594e" />
+<img width="886" height="373" alt="image" src="Captura de pantalla 2025-10-01 121833.png" />
 
-
+Captura de pantalla 2025-10-01 121833
 ---
 
 ### 8.2. Modelo lógico (Star Schema)
@@ -267,13 +267,22 @@ Durante la revisión de la fuente de datos, se verificó que la información rec
 
 ## 10. Evidencia técnica – Parte 2
 
-### 10.1. Archivos cargados en HDFS
-*(Aquí puedes colocar las capturas o evidencia de los archivos cargados en HDFS)*  
-![Archivos en HDFS](ruta/a/imagen_hdfs.png)
 
----
+
+
+### 10.1. Archivos cargados en HDFS
+Seguiremos los siguientes pasos:
+1. Creamos el archivo donde guardaremos el proyecto "Sistema_Inteligencia_Negocios_25-2"
+2. Convertimos nuestros archivos excel donde tenemos la informacion en archivos csv
+3. Procedemos a subir cada archivo al HDFS.
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-10-01 114534.png" />
 
 ### 10.2. Scripts CREATE EXTERNAL TABLE en Hive
+
+Para realizar las consultas en Hive, nos dirigimos a la opcion "Hive View", como se muestra en la imagen:
+
+<img width="891" height="360" alt="image" src="Captura de pantalla 2025-10-01 114607.png" />
+
 A continuación, un ejemplo del script utilizado para crear tablas externas en Hive:
 
 ```sql
