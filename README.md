@@ -329,6 +329,8 @@ El proceso **ETL (Extract, Transform, Load)** se desarrolló íntegramente en el
 - **Hive** como motor de base de datos analítica
 
 ---
+<img width="886" height="387" alt="image" src="https://github.com/user-attachments/assets/3362f776-54df-46bf-b0a1-9bb39fc65a7a" />
+
 
 ### 🔁 Flujo general
 
@@ -736,19 +738,24 @@ Para la visualización de los resultados se elaboró un **dashboard en Power BI*
 1. **Vista acumulativa de producción**
    - Línea temporal de producción total.
    - Filtros: Línea, Cliente, Estilo.
+<img width="886" height="497" alt="image" src="https://github.com/user-attachments/assets/f0ff780a-ec78-4a4e-817b-5aec46ef4f4e" />
 
 2. **Vista acumulativa de calidad**
    - Porcentaje acumulado de segundas por mes y línea.
    - Filtros: Línea, Estilo, Mes.
+<img width="1405" height="782" alt="image" src="https://github.com/user-attachments/assets/54b7e5aa-9e36-4b5a-858e-4b692fb1c348" />
 
 3. **Vista comparativa**
    - Gráfico de barras comparando la producción total y segundas entre el mes actual y el anterior.
+<img width="1115" height="623" alt="image" src="https://github.com/user-attachments/assets/3969e3bf-b145-4d8a-b1c9-20ad238c5739" />
+
 
 4. **KPI destacado con semáforo**
    - Eficiencia promedio mensual:
      - 🟢 Verde: > 80%
      - 🟡 Amarillo: 70–80%
      - 🔴 Rojo: < 70%
+<img width="1113" height="623" alt="image" src="https://github.com/user-attachments/assets/7aeadbfc-b797-48fb-81f6-d363d86bb8d9" />
 
 ---
 
