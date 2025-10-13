@@ -320,6 +320,457 @@ Con lo cual nos sale la siguiente tabla:
 
 ---
 
+## 11. Diseño del proceso ETL
+
+El proceso **ETL (Extract, Transform, Load)** se desarrolló íntegramente en el entorno **Hortonworks Sandbox**, utilizando las herramientas nativas del ecosistema Hadoop:
+
+- **HDFS** para almacenamiento  
+- **Spark** para procesamiento  
+- **Hive** como motor de base de datos analítica
+
+---
+
+### 🔁 Flujo general
+
+Se diseñó un flujo estructurado que inicia con la extracción de los reportes Excel proporcionados por el área de producción y termina con la carga de datos consolidados en tablas Hive, preparadas para análisis y visualización.
+
+El proceso se estructuró en tres fases principales:
+
+---
+
+### 🟩 1. Extracción (Extract)
+
+Se recopilaron los siguientes archivos:
+
+- `detalle-produccion-costura(1).xlsx`
+- `detalle-produccion-costura.xlsx`
+- `eficiencia.xlsx`
+- `produccion-costura-cliente.xlsx`
+- `produccion-costura-linea-cliente.xlsx`
+- `segundas-prendas.xlsx`
+
+Estos archivos se convirtieron a formato **CSV** y se almacenaron en la ruta `/data/raw/` dentro de **HDFS**, manteniendo carpetas por dataset y fecha de ingestión:
+
+/data/raw/<nombre_archivo>/ingest_date=YYYYMMDD
+
+### 🟨 2. Transformación (Transform)
+
+Mediante **Spark (Scala)** se aplicaron reglas de limpieza y estandarización:
+
+- Eliminación de registros duplicados por `ORDEN_PRODUCCION` y `SECUENCIA_PAQUETE`
+- Normalización de mayúsculas en campos de texto (`ESTILO`, `TALLA`, `LINEA`)
+- Conversión de fechas al formato ISO (`yyyy-MM-dd`)
+- Cálculo del porcentaje de segundas: PORC_SEGUNDAS = FALLAS_SEGUNDAS / PRENDAS
+- Validación de campos nulos y eliminación de filas incompletas
+
+Los datos limpios se almacenaron temporalmente en la **zona staging** (`/data/staging/`).
+
+---
+
+### 🟦 3. Carga (Load)
+
+Finalmente, los datos transformados se cargaron en tablas **Hive**, diferenciando dos zonas:
+
+- **Raw layer:** tablas externas sobre los archivos CSV originales  
+- **Curated layer:** tablas normalizadas en formato **ORC**, optimizadas para consulta y análisis
+
+Las **particiones por año y mes (anio, mes)** se definieron para la tabla de hechos, mejorando el rendimiento en consultas analíticas.
+
+El flujo ETL consolidó los reportes dispersos en una estructura uniforme, garantizando **trazabilidad y consistencia** en las métricas de producción y eficiencia.
+
+---
+
+## 📂 Fuentes de datos
+
+| Archivo origen | Contenido principal | Campos clave |
+|----------------|---------------------|---------------|
+| `detalle-produccion-costura(1).xlsx` | Producción diaria por orden y paquete | ORDEN_PRODUCCION, SECUENCIA_PAQUETE, ESTILO, TALLA, PRENDAS, FECHA_TERMINO |
+| `detalle-produccion-costura.xlsx` | Detalle complementario de producción | ORDEN_PRODUCCION, SECUENCIA_PAQUETE, ESTILO, TALLA, PRENDAS, FECHA_TERMINO |
+| `eficiencia.xlsx` | Eficiencia por línea de costura y fecha | FECHA, LINEA, EFICIENCIA |
+| `produccion-costura-cliente.xlsx` | Producción total por cliente | FECHA, TCODICLIE, PRENDAS |
+| `produccion-costura-linea-cliente.xlsx` | Producción por cliente y línea | FECHA, LINEA, TCODICLIE, PRENDAS |
+| `segundas-prendas.xlsx` | Registro de fallas y prendas observadas | FECHA, INSPECCION_TOTAL, FALLAS_SEGUNDAS, PORC_SEGUNDAS |
+
+Cada archivo fue convertido a **CSV** y almacenado en la **zona raw de HDFS**, dentro de carpetas organizadas por fecha de ingestión (`ingest_date=YYYYMMDD`).
+
+---
+
+## 🧩 Zona Staging
+
+Después de la carga inicial en `/data/raw`, se creó una zona de **staging** en `/data/staging/`, donde los archivos se procesaron mediante Spark para aplicar limpieza, validaciones y cálculos intermedios.
+
+Reglas aplicadas:
+
+- Eliminación de duplicados por `ORDEN_PRODUCCION` y `SECUENCIA_PAQUETE`
+- Estandarización de formatos de texto (mayúsculas, eliminación de espacios)
+- Conversión de fechas a formato ISO (`yyyy-MM-dd`)
+- Validación de nulos y exclusión de filas incompletas
+- Cálculo del porcentaje de segundas (`FALLAS_SEGUNDAS / INSPECCION_TOTAL`)
+- Unión de datos complementarios (producción, eficiencia, clientes y fallas) en una estructura integrada
+
+El resultado fue almacenado temporalmente en formato **Parquet**, para su posterior carga en las tablas finales del **Data Warehouse**.
+
+---
+
+## ⚙️ Reglas de negocio
+
+1. **Integridad de producción:** una fila es válida solo si contiene `ORDEN_PRODUCCION`, `FECHA_TERMINO` y `PRENDAS > 0`.  
+2. **Homogeneización de claves:** unificación de códigos de cliente (`TCODICLIE`) y líneas de costura bajo una nomenclatura única.  
+3. **Cálculo de indicadores:**
+ - `EFICIENCIA_PROMEDIO` por línea y fecha  
+ - `% SEGUNDAS` por día  
+ - Total de prendas por cliente y estilo  
+4. **Trazabilidad:** se registró la fecha de ingestión (`ingest_date`) y el lote de carga.
+
+---
+
+## 💾 Carga final
+
+En la fase final, los datos transformados se cargaron en Hive, distribuidos en dos esquemas:
+
+- **dw_raw:** tablas externas apuntando a los CSV originales  
+- **dw_curated:** tablas limpias y normalizadas en formato **ORC**, listas para análisis y construcción del **cubo OLAP**
+
+Las tablas de la capa curated fueron **particionadas por año y mes (anio, mes)** para optimizar las consultas.
+
+Antes de habilitar el acceso al dashboard, se ejecutaron consultas de verificación de conteos y validaciones de integridad.
+
+---
+
+## 12. Scripts de Extracción y Carga
+
+El desarrollo de los scripts se realizó completamente dentro del entorno **Hortonworks Sandbox**, empleando **Hive** para la creación de tablas externas y **Spark (Scala)** para la limpieza, transformación y carga hacia la zona *Curated*.
+
+---
+
+### 12.1 Creación de bases de datos
+
+```sql
+CREATE DATABASE IF NOT EXISTS dw_raw;
+CREATE DATABASE IF NOT EXISTS dw_curated;
+```
+
+---
+
+### 12.2 Tablas RAW (HiveQL)
+
+#### a) detalle_produccion_costura
+```sql
+USE dw_raw;
+
+CREATE EXTERNAL TABLE IF NOT EXISTS detalle_produccion_costura (
+  ORDEN_PRODUCCION STRING,
+  SECUENCIA_PAQUETE STRING,
+  ESTILO STRING,
+  TALLA STRING,
+  PRENDAS INT,
+  FECHA_TERMINO STRING
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ("separatorChar" = ",")
+LOCATION '/data/raw/detalle_produccion_costura/';
+```
+
+#### b) eficiencia
+```sql
+CREATE EXTERNAL TABLE IF NOT EXISTS eficiencia (
+  FECHA STRING,
+  LINEA STRING,
+  EFICIENCIA DOUBLE
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ("separatorChar" = ",")
+LOCATION '/data/raw/eficiencia/';
+```
+
+#### c) produccion_costura_cliente
+```sql
+CREATE EXTERNAL TABLE IF NOT EXISTS produccion_costura_cliente (
+  FECHA STRING,
+  TCODICLIE STRING,
+  PRENDAS INT
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+LOCATION '/data/raw/produccion_costura_cliente/';
+```
+
+#### d) produccion_costura_linea_cliente
+```sql
+CREATE EXTERNAL TABLE IF NOT EXISTS produccion_costura_linea_cliente (
+  FECHA STRING,
+  LINEA STRING,
+  TCODICLIE STRING,
+  PRENDAS INT
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+LOCATION '/data/raw/produccion_costura_linea_cliente/';
+```
+
+#### e) segundas_prendas
+```sql
+CREATE EXTERNAL TABLE IF NOT EXISTS segundas_prendas (
+  FECHA STRING,
+  INSPECCION_TOTAL INT,
+  FALLAS_SEGUNDAS INT,
+  PORC_SEGUNDAS DOUBLE
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+LOCATION '/data/raw/segundas_prendas/';
+```
+
+---
+
+### 12.3 Transformaciones (Spark - Scala)
+
+```scala
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
+
+val spark = SparkSession.builder()
+  .appName("Transformacion Produccion Costura")
+  .enableHiveSupport()
+  .getOrCreate()
+
+// Lectura de los datasets raw
+val detalle = spark.read.option("header", "true").csv("/data/raw/detalle_produccion_costura/")
+val eficiencia = spark.read.option("header", "true").csv("/data/raw/eficiencia/")
+val cliente = spark.read.option("header", "true").csv("/data/raw/produccion_costura_cliente/")
+val lineaCliente = spark.read.option("header", "true").csv("/data/raw/produccion_costura_linea_cliente/")
+val segundas = spark.read.option("header", "true").csv("/data/raw/segundas_prendas/")
+
+// Limpieza y normalización
+val detalleClean = detalle
+  .withColumn("ESTILO", upper(trim(col("ESTILO"))))
+  .withColumn("TALLA", upper(trim(col("TALLA"))))
+  .withColumn("FECHA_TERMINO", to_date(col("FECHA_TERMINO"), "yyyy-MM-dd"))
+  .dropDuplicates("ORDEN_PRODUCCION", "SECUENCIA_PAQUETE")
+
+val eficienciaClean = eficiencia
+  .withColumn("FECHA", to_date(col("FECHA"), "yyyy-MM-dd"))
+  .withColumn("LINEA", upper(trim(col("LINEA"))))
+
+val segundasClean = segundas
+  .withColumn("FECHA", to_date(col("FECHA"), "yyyy-MM-dd"))
+  .withColumn("PORC_SEGUNDAS",
+      when(col("INSPECCION_TOTAL") > 0, col("FALLAS_SEGUNDAS") / col("INSPECCION_TOTAL"))
+      .otherwise(lit(null))
+  )
+
+// Almacenamiento temporal en staging
+detalleClean.write.mode("overwrite").parquet("/data/staging/detalle_produccion_costura/")
+eficienciaClean.write.mode("overwrite").parquet("/data/staging/eficiencia/")
+segundasClean.write.mode("overwrite").parquet("/data/staging/segundas_prendas/")
+
+spark.stop()
+```
+
+---
+
+### 12.4 Creación de tablas Curated (HiveQL)
+
+```sql
+USE dw_curated;
+
+-- Dimensión Tiempo
+CREATE TABLE IF NOT EXISTS dim_tiempo (
+  id_tiempo INT,
+  fecha DATE,
+  dia INT,
+  mes INT,
+  anio INT,
+  trimestre INT
+)
+STORED AS ORC;
+
+-- Dimensión Línea
+CREATE TABLE IF NOT EXISTS dim_linea (
+  id_linea INT,
+  nombre_linea STRING
+)
+STORED AS ORC;
+
+-- Dimensión Producto
+CREATE TABLE IF NOT EXISTS dim_producto (
+  id_producto INT,
+  estilo STRING,
+  talla STRING
+)
+STORED AS ORC;
+
+-- Dimensión Cliente
+CREATE TABLE IF NOT EXISTS dim_cliente (
+  id_cliente INT,
+  tcodiclie STRING
+)
+STORED AS ORC;
+
+-- Tabla de Hechos
+CREATE TABLE IF NOT EXISTS fact_produccion (
+  orden_produccion STRING,
+  secuencia_paquete STRING,
+  id_producto INT,
+  id_linea INT,
+  id_cliente INT,
+  prendas INT,
+  eficiencia DOUBLE,
+  fallas_segundas INT,
+  porc_segundas DOUBLE,
+  fecha_termino DATE
+)
+PARTITIONED BY (anio INT, mes INT)
+STORED AS ORC;
+```
+
+---
+
+### 12.5 Carga de datos a tablas Curated
+
+```sql
+INSERT OVERWRITE TABLE dw_curated.fact_produccion PARTITION (anio, mes)
+SELECT
+  d.ORDEN_PRODUCCION,
+  d.SECUENCIA_PAQUETE,
+  NULL AS id_producto,
+  NULL AS id_linea,
+  c.id_cliente,
+  d.PRENDAS,
+  e.EFICIENCIA,
+  s.FALLAS_SEGUNDAS,
+  s.PORC_SEGUNDAS,
+  d.FECHA_TERMINO,
+  year(d.FECHA_TERMINO) AS anio,
+  month(d.FECHA_TERMINO) AS mes
+FROM dw_raw.detalle_produccion_costura d
+LEFT JOIN dw_raw.eficiencia e ON d.FECHA_TERMINO = e.FECHA
+LEFT JOIN dw_raw.produccion_costura_cliente c ON d.FECHA_TERMINO = c.FECHA
+LEFT JOIN dw_raw.segundas_prendas s ON d.FECHA_TERMINO = s.FECHA;
+```
+
+---
+
+### 12.6 Validaciones y evidencias
+
+```sql
+DESCRIBE FORMATTED dw_curated.fact_produccion;
+SHOW PARTITIONS dw_curated.fact_produccion;
+SELECT COUNT(*) FROM dw_curated.fact_produccion;
+SELECT SUM(prendas) FROM dw_curated.fact_produccion;
+SELECT AVG(eficiencia) FROM dw_curated.fact_produccion;
+```
+
+## 13. Tablas en Hive
+
+La estructura final implementada en **Hive** se resume en la siguiente tabla:
+
+| Tabla | Tipo | Particiones | Formato |
+|--------|------|--------------|----------|
+| dw_raw.detalle_produccion_costura | Raw | ingest_date | CSV |
+| dw_raw.eficiencia | Raw | ingest_date | CSV |
+| dw_raw.produccion_costura_cliente | Raw | ingest_date | CSV |
+| dw_raw.segundas_prendas | Raw | ingest_date | CSV |
+| dw_curated.dim_tiempo | Curated | — | ORC |
+| dw_curated.dim_linea | Curated | — | ORC |
+| dw_curated.dim_producto | Curated | — | ORC |
+| dw_curated.dim_cliente | Curated | — | ORC |
+| dw_curated.fact_produccion | Curated | anio, mes | ORC |
+
+### Evidencias
+
+Se ejecutaron los siguientes comandos de validación:
+
+```sql
+DESCRIBE FORMATTED dw_curated.fact_produccion;
+SHOW PARTITIONS dw_curated.fact_produccion;
+SELECT COUNT(*) FROM dw_curated.fact_produccion;
+SELECT SUM(prendas)
+FROM dw_curated.fact_produccion
+WHERE anio = 2025 AND mes = 10;
+```
+
+Los resultados confirmaron la correcta carga y estructura de las tablas en Hive.
+
+---
+
+## 14. Cubo OLAP
+
+Con las tablas normalizadas se diseñó un **cubo OLAP** sobre la tabla de hechos `dw_curated.fact_produccion`, complementada por las dimensiones `dim_tiempo`, `dim_linea`, `dim_cliente` y `dim_producto`.
+
+### Estructura del Cubo
+
+- **Tabla de hechos:** `fact_produccion`
+- **Dimensiones:** Tiempo, Línea, Cliente, Producto
+- **Medidas:**
+  - Total de prendas → `SUM(prendas)`
+  - Eficiencia promedio → `AVG(eficiencia)`
+  - Total de fallas segundas → `SUM(fallas_segundas)`
+  - Porcentaje de segundas → `AVG(porc_segundas)`
+
+### Ejemplo de consulta OLAP
+
+```sql
+SELECT 
+    t.mes, 
+    l.nombre_linea,
+    SUM(f.prendas) AS total_prendas,
+    AVG(f.eficiencia) AS eficiencia_prom,
+    AVG(f.porc_segundas) AS porc_segundas_prom
+FROM dw_curated.fact_produccion f
+JOIN dw_curated.dim_tiempo t 
+    ON f.anio = t.anio AND f.mes = t.mes
+JOIN dw_curated.dim_linea l 
+    ON f.id_linea = l.id_linea
+GROUP BY t.mes, l.nombre_linea
+ORDER BY t.mes;
+```
+
+Este cubo permitió visualizar el desempeño mensual por línea de producción, identificando tendencias y niveles de eficiencia.
+
+---
+
+## 15. Dashboard Preliminar
+
+Para la visualización de los resultados se elaboró un **dashboard en Power BI**, conectado directamente al servidor **Hive** del **Hortonworks Sandbox**.
+
+### Componentes del Dashboard
+
+1. **Vista acumulativa de producción**
+   - Línea temporal de producción total.
+   - Filtros: Línea, Cliente, Estilo.
+
+2. **Vista acumulativa de calidad**
+   - Porcentaje acumulado de segundas por mes y línea.
+   - Filtros: Línea, Estilo, Mes.
+
+3. **Vista comparativa**
+   - Gráfico de barras comparando la producción total y segundas entre el mes actual y el anterior.
+
+4. **KPI destacado con semáforo**
+   - Eficiencia promedio mensual:
+     - 🟢 Verde: > 80%
+     - 🟡 Amarillo: 70–80%
+     - 🔴 Rojo: < 70%
+
+---
+
+## 16. Limitaciones y Propuesta de Mejora
+
+### Limitaciones
+
+- Las fuentes originales en Excel presentaban diferencias de formato y errores tipográficos que requirieron limpieza manual.  
+- El entorno **Hortonworks Sandbox** se ejecutó en una máquina virtual local, limitando los recursos de procesamiento.  
+- La conversión de archivos Excel a CSV se realizó de forma semi-manual.  
+- No se contó con un orquestador de flujos (*Airflow* o *NiFi*) para automatizar completamente el ETL.  
+- El cubo OLAP fue implementado a nivel lógico en Hive; no se integró aún un motor OLAP dedicado.
+
+### Propuestas de Mejora
+
+- Implementar **Apache NiFi** para automatizar la carga de archivos y controlar la ingestión desde el origen.  
+- Migrar el entorno a un **clúster Hadoop distribuido**, aumentando la capacidad de procesamiento.  
+- Incorporar un motor OLAP como **Apache Kylin** o **Druid** para generar cubos con consultas multidimensionales en tiempo real.  
+- Crear un **catálogo maestro de productos y clientes** para mejorar la integridad referencial.  
+- Programar **validaciones automáticas** entre tablas *raw* y *curated* para detectar discrepancias en las cargas diarias.
+
+---
 ## Bibliografía  
 
 - [Tableau – Visualización de datos](https://www.tableau.com/es-es/blog)  
