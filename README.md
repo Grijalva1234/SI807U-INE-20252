@@ -757,6 +757,10 @@ Para la visualización de los resultados se elaboró un **dashboard en Power BI*
      - 🔴 Rojo: < 70%
 <img width="1113" height="623" alt="image" src="https://github.com/user-attachments/assets/7aeadbfc-b797-48fb-81f6-d363d86bb8d9" />
 
+### Dashboard
+
+📊 [Ver Dashboard en Power BI (.pbix)](https://github.com/Grijalva1234/SI807U-INE-20252/blob/main/NETALLCO%20-%20Dashboard.pbix)
+
 ---
 
 ## 16. Limitaciones y Propuesta de Mejora
