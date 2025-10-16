@@ -3,6 +3,9 @@
 
 **“NETTALCO”**  
 
+<img width="496" height="644" alt="image" src="https://github.com/user-attachments/assets/365294ff-63fd-41e3-8361-7e848b88683c" />
+
+
 **Curso:** SI807-U SISTEMA DE INTELIGENCIA DE NEGOCIOS  
 **Grupo 5**  
 
