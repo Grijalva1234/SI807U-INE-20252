@@ -16,6 +16,13 @@
 
 ---
 
+
+<p align="center">
+  📄 <a href="./Resumen.md"><b>Ver resumen completo y especifícaciones técnicas del proyecto →</b></a>
+</p>
+
+---
+
 ## 1. Generalidades de la empresa  
 
 ### 1.1 Nombre o razón social de la empresa  
